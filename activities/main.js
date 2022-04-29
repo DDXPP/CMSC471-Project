@@ -12,19 +12,8 @@ var stormsAffectingLandObjects = [];
 var atlLatLng = new L.LatLng(33.52076, -55.06337);
 var myMap = L.map('map').setView(atlLatLng, 3.5);
 
-// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-//          {
-//             maxZoom: 10,
-//             minZoom: 3,
-//             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
-//         }).addTo(myMap);
 
-// L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
-//         {
-//             maxZoom: 10,
-//             minZoom: 3,
-//             attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-//         }).addTo(myMap);
+
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
             maxZoom: 20,
@@ -45,7 +34,7 @@ var nodeLinkG = svg.select('g')
 Promise.all([
     d3.csv('stormz.csv', function(row) {
         var node = {v_id: +row['v_id'], name: row['name'], LatLng: [+row['lat'], +row['long']], status: row['status'],
-           wind: +row['wind'], pressure: +row['pressure'], category: +row['category'], NameYear: [row['name']+row['year']]};
+           wind: +row['wind'], pressure: +row['pressure'], category: +row['category'], year: +row['year'], NameYear: [row['name']+row['year']]};
        // vertices.set(node.v_id, node);
        node.linkCount = 0;
        nodeFeatures.push(turf.point([+row['long'], +row['lat']], node));
@@ -56,11 +45,12 @@ Promise.all([
 ]).then(function(data) {
     var nodes = data[0];
     var states = data[1];
-    readyToDraw(nodes, states)
+    var decadeToggle = 'visible'
+    readyToDraw(nodes, states, decadeToggle)
 });
 
 //-----------------------------------------------------------------------------
-function readyToDraw(nodes, states) {
+function readyToDraw(nodes, states, decadeToggle) {
     var colorScale = d3.scaleLinear().domain([-1,5]).range(["#ed6925","#000004","#1b0c41","#4a0c6b","#781c6d","#a52c60","#cf4446"]);
     var radiusScale = d3.scaleLinear().domain([-1,5]).range([3,5]);
 
@@ -101,7 +91,15 @@ function readyToDraw(nodes, states) {
     });
 
     //-------------------------------------------------------------
+    //-------------------------------------------------------------
+
+
     
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
+    //------------------------------------------------------------- 
     //-------------------------------------------------------------
     var bbox = turf.bbox(nodeCollection);
     var cellSize = 250;
@@ -132,8 +130,26 @@ function readyToDraw(nodes, states) {
 
     triangleLayer = L.geoJson(triangleBins, {style: triangleStyle});
     //-------------------------------------------------------------
-    
     //-------------------------------------------------------------    
+    nodeLinkG.selectAll('.node-normal')
+    .data(nodes)
+    .enter().append('circle')
+    .attr('class', 'node-normal')
+    .attr('visibility', function(d) {
+        return d['year']<1980 ? 'visible' : decadeToggle
+    })
+    .style('fill', function(d){
+       return colorScale(d['category']);
+    })
+    .style('fill-opacity', 0.7)
+    .attr('r', function(d) {
+       return radiusScale(d.category);
+    });
+    // nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
+    console.log(decadeToggle)
+
+
+
 
     nodeLinkG.selectAll('.node-land')
         .data(nodesAffectingLandObjects)
@@ -148,6 +164,8 @@ function readyToDraw(nodes, states) {
         });
     nodeLinkG.selectAll('.node-land').attr('visibility', 'hidden');
 
+
+    
     nodeLinkG.selectAll('.storm-land')
         .data(stormsAffectingLandObjects)
         .enter().append('circle')
@@ -161,17 +179,7 @@ function readyToDraw(nodes, states) {
         });
     nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
 
-    nodeLinkG.selectAll('.node-normal')
-        .data(nodes)
-        .enter().append('circle')
-        .attr('class', 'node-normal')
-        .style('fill', function(d){
-           return colorScale(d['category']);
-        })
-        .style('fill-opacity', 0.7)
-        .attr('r', function(d) {
-           return radiusScale(d.category);
-        });
+    
     //-------------------------------------------------------------
     //-------------------------------------------------------------
     statesLayer = L.geoJson(states);
@@ -254,4 +262,51 @@ function showOnMap(type) {
 
 
     }
+}
+
+
+// filter by year and category 
+
+function onDecadeChanged() {
+    var select = d3.select('#decadeSelect').node();
+    // Get current value of select element
+    var decade = select.options[select.selectedIndex].value;
+    var decadeToggleggg
+    switch(decade) {
+        case 'all-time':
+            decadeToggleggg = 'visible'
+            break;
+        case 'before-1980':
+            decadeToggleggg = 'hidden'
+            break;
+    }
+    
+
+
+
+    nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
+    myMap.removeLayer(statesLayer);
+    myMap.removeLayer(triangleLayer);
+
+
+    Promise.all([
+        d3.csv('stormz.csv', function(row) {
+            var node = {v_id: +row['v_id'], name: row['name'], LatLng: [+row['lat'], +row['long']], status: row['status'],
+               wind: +row['wind'], pressure: +row['pressure'], category: +row['category'], year: +row['year'], NameYear: [row['name']+row['year']]};
+           // vertices.set(node.v_id, node);
+           node.linkCount = 0;
+           nodeFeatures.push(turf.point([+row['long'], +row['lat']], node));
+           return node;
+    
+        }),
+        d3.json('poly_final.json')//geojson
+    ]).then(function(data) {
+        var nodes = data[0];
+        var states = data[1];
+        readyToDraw(nodes, states, decadeToggleggg)
+        nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
+    });
+
+    console.log(nodeLinkG.selectAll('.node-normal'))
+    // nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
 }

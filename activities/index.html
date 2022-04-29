@@ -29,9 +29,20 @@
             </label>
             <label class="btn btn-secondary"  data-type="affecting_land_storms">
                 <input type="checkbox" name="options" autocomplete="off"> Affecting Land Storms
-            </label>
+            </label> 
+            <label for="decadeSelect">Show: </label>
+            <select class="custom-select" id="decadeSelect" onchange="onDecadeChanged()">
+              <option selected value="all-time">All Time</option>
+              <option value="before-1980">Before 1980</option>
+            </select>
         </div>
-
+        <!-- <div>
+            <label for="decadeSelect">Show: </label>
+            <select class="custom-select" id="decadeSelect" onchange="onDecadeChanged()">
+              <option selected value="all-time">All Time</option>
+              <option value="before-1980">Before 1980</option>
+            </select>
+        </div> -->
         <div id="map" style="height: 720px; width: 960px; border: 1px solid #777;">
         </div>
     </div>
