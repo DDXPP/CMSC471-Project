@@ -9,11 +9,13 @@ var nodesAffectingLandObjects = [];
 var nodesAffectingLandObjectsDistinctNames = [];
 var stormsAffectingLandObjects = [];
 
+var nodes_1990_1999 = []
+var storms_1990_1999 = []
+
 var atlLatLng = new L.LatLng(33.52076, -55.06337);
 var myMap = L.map('map').setView(atlLatLng, 3.5);
 
-
-
+var node, states, decadeToggle
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
             maxZoom: 20,
@@ -43,9 +45,9 @@ Promise.all([
     }),
     d3.json('poly_final.json')//geojson
 ]).then(function(data) {
-    var nodes = data[0];
-    var states = data[1];
-    var decadeToggle = 'visible'
+    nodes = data[0];
+    states = data[1];
+    decadeToggle = 'visible'
     readyToDraw(nodes, states, decadeToggle)
 });
 
@@ -53,9 +55,6 @@ Promise.all([
 function readyToDraw(nodes, states, decadeToggle) {
     var colorScale = d3.scaleLinear().domain([-1,5]).range(["#ed6925","#000004","#1b0c41","#4a0c6b","#781c6d","#a52c60","#cf4446"]);
     var radiusScale = d3.scaleLinear().domain([-1,5]).range([3,5]);
-
-    var nodeCollection = turf.featureCollection(nodeFeatures);
-
     //-------------------------------------------------------------
     var poly0 = turf.polygon(states.features[0].geometry.coordinates)
     var poly1 = turf.polygon(states.features[1].geometry.coordinates)
@@ -101,42 +100,24 @@ function readyToDraw(nodes, states, decadeToggle) {
     //-------------------------------------------------------------
     //------------------------------------------------------------- 
     //-------------------------------------------------------------
-    var bbox = turf.bbox(nodeCollection);
-    var cellSize = 250;
-    var options = {units: 'kilometers'};
-
-    var triangleGrid = turf.triangleGrid(bbox, cellSize, options);
-    var triangleBins = turf.collect(triangleGrid, nodeCollection, 'v_id', 'values');
-    triangleBins.features = triangleBins.features.filter(function(d){
-        return d.properties.values.length > 0;
-    });
-
-    // Triangle style
-    triangleExtent = d3.extent(triangleBins.features, function(d){
-        return d.properties.values.length;
-    });
-    var triangleScale = d3.scaleSequential(d3.interpolateMagma)
-        .domain(triangleExtent.reverse());
-    
-    var triangleStyle = function(f) {
-        return {
-            weight: 0.5,
-            opacity: 1,
-            color: 'white',
-            fillOpacity: 0.7,
-            fillColor: triangleScale(f.properties.values.length)
-        }
-    };
-
-    triangleLayer = L.geoJson(triangleBins, {style: triangleStyle});
-    //-------------------------------------------------------------
     //-------------------------------------------------------------    
+
+
+
     nodeLinkG.selectAll('.node-normal')
     .data(nodes)
     .enter().append('circle')
     .attr('class', 'node-normal')
     .attr('visibility', function(d) {
-        return d['year']<1980 ? 'visible' : decadeToggle
+        if (d['year']<1980) {
+            console.log("<1980"+decadeToggle)
+            return 'visible'
+        }
+        else {
+            console.log(">>>>>1980"+decadeToggle)
+            return decadeToggle
+        }
+        // return d['year']<1980 ? 'visible' : decadeToggle
     })
     .style('fill', function(d){
        return colorScale(d['category']);
@@ -146,8 +127,8 @@ function readyToDraw(nodes, states, decadeToggle) {
        return radiusScale(d.category);
     });
     // nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
+    
     console.log(decadeToggle)
-
 
 
 
@@ -227,9 +208,6 @@ function cleanUpMap(type) {
         case 'states':
             myMap.removeLayer(statesLayer);
             break;
-        case 'triangle_bins':
-            myMap.removeLayer(triangleLayer);
-            break;
         case 'affecting_land_nodes':
             nodeLinkG.selectAll('.node-land').attr('visibility', 'hidden');
             break;
@@ -248,9 +226,6 @@ function showOnMap(type) {
             statesLayer.addTo(myMap);
             nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
             break;
-        case 'triangle_bins':
-            triangleLayer.addTo(myMap);
-            break;
         case 'affecting_land_nodes':
             // nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
             // nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
@@ -259,8 +234,6 @@ function showOnMap(type) {
         case 'affecting_land_storms':
             nodeLinkG.selectAll('.storm-land').attr('visibility', 'visible');
             break;
-
-
     }
 }
 
@@ -282,31 +255,29 @@ function onDecadeChanged() {
     }
     
 
-
-
-    nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
+    readyToDraw(nodes, states, decadeToggleNew)
+    // nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
     myMap.removeLayer(statesLayer);
-    myMap.removeLayer(triangleLayer);
 
 
-    Promise.all([
-        d3.csv('stormz.csv', function(row) {
-            var node = {v_id: +row['v_id'], name: row['name'], LatLng: [+row['lat'], +row['long']], status: row['status'],
-               wind: +row['wind'], pressure: +row['pressure'], category: +row['category'], year: +row['year'], NameYear: [row['name']+row['year']]};
-           // vertices.set(node.v_id, node);
-           node.linkCount = 0;
-           nodeFeatures.push(turf.point([+row['long'], +row['lat']], node));
-           return node;
+    // Promise.all([
+    //     d3.csv('stormz.csv', function(row) {
+    //         var node = {v_id: +row['v_id'], name: row['name'], LatLng: [+row['lat'], +row['long']], status: row['status'],
+    //            wind: +row['wind'], pressure: +row['pressure'], category: +row['category'], year: +row['year'], NameYear: [row['name']+row['year']]};
+    //        // vertices.set(node.v_id, node);
+    //        node.linkCount = 0;
+    //        nodeFeatures.push(turf.point([+row['long'], +row['lat']], node));
+    //        return node;
     
-        }),
-        d3.json('poly_final.json')//geojson
-    ]).then(function(data) {
-        var nodes = data[0];
-        var states = data[1];
-        readyToDraw(nodes, states, decadeToggleNew)
-        nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
-    });
+    //     }),
+    //     d3.json('poly_final.json')//geojson
+    // ]).then(function(data) {
+    //     var nodes = data[0];
+    //     var states = data[1];
+    //     readyToDraw(nodes, states, decadeToggleNew)
+    //     nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
+    // });
 
-    console.log(nodeLinkG.selectAll('.node-normal'))
+    // console.log(nodeLinkG.selectAll('.node-normal'))
     // nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
 }
