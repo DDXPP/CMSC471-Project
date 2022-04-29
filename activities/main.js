@@ -1,12 +1,16 @@
 var map = d3.select('#map');
 var mapWidth = +map.attr('width');
 var mapHeight = +map.attr('height');
-var vertices = d3.map();
-var activeMapType = 'nodes_links';
-var nodeFeatures = [];
 
-var atlLatLng = new L.LatLng(33.7771, -84.3900);
-var myMap = L.map('map').setView(atlLatLng, 5);
+var activeMapType = 'nodes_only';
+
+var nodeFeatures = [];
+var nodesAffectingLandObjects = [];
+var nodesAffectingLandObjectsDistinctNames = [];
+var stormsAffectingLandObjects = [];
+
+var atlLatLng = new L.LatLng(33.52076, -55.06337);
+var myMap = L.map('map').setView(atlLatLng, 3.5);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
          {
@@ -16,25 +20,95 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
              }).addTo(myMap);
 
 var svgLayer = L.svg();
-svgLayer.addTo(myMap)
+svgLayer.addTo(myMap);
 
 var svg = d3.select('#map').select('svg');
 var nodeLinkG = svg.select('g')
     .attr('class', 'leaflet-zoom-hide');
 
-var landNodes = svg.select('g')
+var nodesAffectingLandG = svg.select('g')
     .attr('class', 'leaflet-zoom-hide');
+
+
+//-----------------------------------------------------------------------------
+Promise.all([
+    d3.csv('stormz.csv', function(row) {
+        var node = {v_id: +row['v_id'], name: row['name'], LatLng: [+row['lat'], +row['long']], status: row['status'],
+           wind: +row['wind'], pressure: +row['pressure'], category: +row['category'], NameYear: [row['name']+row['year']]};
+       // vertices.set(node.v_id, node);
+       node.linkCount = 0;
+       nodeFeatures.push(turf.point([+row['long'], +row['lat']], node));
+       return node;
+
+    }),
+    d3.json('poly_final.json')//geojson
+]).then(function(data) {
+    var nodes = data[0];
+    var states = data[1];
+    readyToDraw(nodes, states)
+});
+
+//-----------------------------------------------------------------------------
 function readyToDraw(nodes, states) {
-    var nodeTypes = d3.map(nodes, function(d){return d.type;}).keys();
-    var colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(nodeTypes);
-    var linkCountExtent = d3.extent(nodes, function(d) {return d.linkCount;});
-    var radiusScale = d3.scaleSqrt().range([0.5,7.5]).domain(linkCountExtent);
-    var choroScale = d3.scaleThreshold()
-    .domain([10,20,50,100,200,500,1000])
-    .range(d3.schemeYlOrRd[8]);
+    var colorScale = d3.scaleLinear().domain([-1,5]).range(["#ed6925","#000004","#1b0c41","#4a0c6b","#781c6d","#a52c60","#cf4446"]);
+    var radiusScale = d3.scaleLinear().range([3,5]).domain([-1,5]);
 
+    var nodeCollection = turf.featureCollection(nodeFeatures);
+
+    //-------------------------------------------------------------
+    var poly0 = turf.polygon(states.features[0].geometry.coordinates)
+    var poly1 = turf.polygon(states.features[1].geometry.coordinates)
+    var poly2 = turf.polygon(states.features[2].geometry.coordinates)
+    var poly3 = turf.polygon(states.features[3].geometry.coordinates)
+    var poly4 = turf.polygon(states.features[4].geometry.coordinates)
+
+    nodes.forEach(function (n) {
+        var pointTemp = turf.point([n.LatLng[1],n.LatLng[0]])
+        if (turf.inside(pointTemp,poly0) ||
+            turf.inside(pointTemp,poly1) || 
+            turf.inside(pointTemp,poly2) ||
+            turf.inside(pointTemp,poly3) ||
+            turf.inside(pointTemp,poly4)) {
+                nodesAffectingLandObjects.push(n);
+            }
+    });
+
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
+    // Using both name and year of the storm since there are storms with duplicated names
+    for (var i = 0; i < nodesAffectingLandObjects.length; i++) {
+        nameTemp = nodesAffectingLandObjects[i].NameYear[0];
+        if (!nodesAffectingLandObjectsDistinctNames.includes(nameTemp)) {
+            nodesAffectingLandObjectsDistinctNames.push(nameTemp);
+        }
+    };
+
+    nodes.forEach(function (n) {
+        if (nodesAffectingLandObjectsDistinctNames.includes(n.NameYear[0])) {
+            stormsAffectingLandObjects.push(n);
+        }
+    });
+
+    //-------------------------------------------------------------
     
+    //-------------------------------------------------------------
+    var bbox = turf.bbox(nodeCollection);
+    var cellSize = 250;
+    var options = {units: 'kilometers'};
 
+    var triangleGrid = turf.triangleGrid(bbox, cellSize, options);
+    var triangleBins = turf.collect(triangleGrid, nodeCollection, 'v_id', 'values');
+    triangleBins.features = triangleBins.features.filter(function(d){
+        return d.properties.values.length > 0;
+    });
+
+    // Triangle style
+    triangleExtent = d3.extent(triangleBins.features, function(d){
+        return d.properties.values.length;
+    });
+    var triangleScale = d3.scaleSequential(d3.interpolateMagma)
+        .domain(triangleExtent.reverse());
+    
     var triangleStyle = function(f) {
         return {
             weight: 0.5,
@@ -45,128 +119,58 @@ function readyToDraw(nodes, states) {
         }
     };
 
-
+    triangleLayer = L.geoJson(triangleBins, {style: triangleStyle});
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
+    statesLayer = L.geoJson(states);
+    statesLayer.addTo(myMap);
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
+    nodesAffectingLandG.selectAll('.grid-node')
+        .data(nodesAffectingLandObjects)
+        .enter().append('circle')
+        .attr('class', 'grid-node')
+        .style('fill', function(d){
+            return colorScale(d['category']);
+        })
+        .style('fill-opacity', 0.6)
+        .attr('r', function(d) {
+            return radiusScale(d.category);
+        });
+    
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
     nodeLinkG.selectAll('.grid-node')
         .data(nodes)
         .enter().append('circle')
         .attr('class', 'grid-node')
         .style('fill', function(d){
-           return colorScale(d['type']);
+           return colorScale(d['category']);
         })
         .style('fill-opacity', 0.6)
         .attr('r', function(d) {
-           return radiusScale(d.linkCount);
+           return radiusScale(d.category);
         });
 
-    landNodes.selectAll('.grid-node')
-        .data(nodes)
-        .enter().append('circle')
-        .attr('class', 'grid-node')
-        .style('fill', function(d){
-           return colorScale(d['type']);
-        })
-        .style('fill-opacity', 0.6)
-        .attr('r', function(d) {
-           return radiusScale(d.linkCount);
-        });
-
-    // nodeLinkG.selectAll('.grid-link')
-    //     .data(links)
-    //     .enter().append('line')
-    //     .attr('class', 'grid-link')
-    //     .style('stroke', '#999')
-    //     .style('stroke-opacity', 0.5);
-
-    var statesStyle = function(f) {
-    return {
-        weight: 2,
-        opacity: 1,
-        color: 'white',
-        dashArray: '3',
-        fillOpacity: 0.7,
-        fillColor: choroScale(f.properties.values.length)
-    }
-    };  
-   myMap.on('zoomend', updateLayers);
+    //-------------------------------------------------------------
    
-   var nodeCollection = turf.featureCollection(nodeFeatures);
-   
-   var chorostates = turf.collect(states, nodeCollection, 'v_id', 'values')
-   statesLayer = L.geoJson(chorostates);
-
-   statesLayer.addTo(myMap);
-   updateLayers(chorostates);
-   console.log(chorostates)
-   var bbox = turf.bbox(nodeCollection);
-    var cellSize = 250;
-    var options = {units: 'kilometers'};
-
-    var triangleGrid = turf.triangleGrid(bbox, cellSize, options);
-    var triangleBins = turf.collect(triangleGrid, nodeCollection, 'v_id', 'values');
-    triangleBins.features = triangleBins.features.filter(function(d){
-   return d.properties.values.length > 0;
- });
-    triangleExtent = d3.extent(triangleBins.features, function(d){
-        return d.properties.values.length;
-    });
-    var triangleScale = d3.scaleSequential(d3.interpolateMagma)
-    .domain(triangleExtent.reverse());
-    triangleLayer = L.geoJson(triangleBins, {style: triangleStyle});
-
-
+    myMap.on('zoomend', updateLayers);
+    updateLayers();
 }
 
 
- function updateLayers(chorostates){
-   nodeLinkG.selectAll('.grid-node')
+//-----------------------------------------------------------------------------
+function updateLayers() {
+    nodeLinkG.selectAll('.grid-node')
        .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
        .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+    nodesAffectingLandG.selectAll('.grid-node')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+};
 
-   nodeLinkG.selectAll('.grid-link')
-       .attr('x1', function(d){return myMap.latLngToLayerPoint(d.node1.LatLng).x})
-       .attr('y1', function(d){return myMap.latLngToLayerPoint(d.node1.LatLng).y})
-       .attr('x2', function(d){return myMap.latLngToLayerPoint(d.node2.LatLng).x})
-       .attr('y2', function(d){return myMap.latLngToLayerPoint(d.node2.LatLng).y});
 
-    landNodes.selectAll('.grid-node')
-        .attr('cx', function(d){
-            for (let i = 0; i < 5; i++) {
-                console.log(chorostates.features[i])
-            }   
-        })
-        // console.log(chorostates.features[0])
- };
-Promise.all([
-    d3.csv('stormz.csv', function(row) {
-        var node = {v_id: +row['v_id'], LatLng: [+row['lat'], +row['long']], status: row['status'],
-           wind: +row['wind'], pressure: +row['pressure'], category: +row['category']};
-       // vertices.set(node.v_id, node);
-       node.linkCount = 0;
-       nodeFeatures.push(turf.point([+row['long'], +row['lat']], node));
-       return node;
-
-    }),
-
-    // d3.csv('gridkit_north_america-highvoltage-links.csv', function(row) {
-    //    var link = {l_id: +row['l_id'], v_id_1: +row['v_id_1'], v_id_2: +row['v_id_2'],
-    //        voltage: +row['voltage'], cables: +row['cables'], wires: +row['wires'],
-    //        frequency: +row['frequency'], wkt_srid_4326: row['wkt_srid_4326']};
-    //    link.node1 = vertices.get(link.v_id_1);
-    //    link.node2 = vertices.get(link.v_id_2);
-    //    link.node1.linkCount += 1;
-    //    link.node2.linkCount += 1;
-
-    //    return link;
-
-    // }),
-    d3.json('poly_final.json')
-]).then(function(data) {
-    var nodes = data[0];
-    var states = data[1];
-    
-    readyToDraw(nodes, states)
-});
-
+//-----------------------------------------------------------------------------
 d3.selectAll('.btn-group > .btn.btn-secondary')
     .on('click', function() {
         var newMapType = d3.select(this).attr('data-type');
@@ -178,19 +182,25 @@ d3.selectAll('.btn-group > .btn.btn-secondary')
 
         activeMapType = newMapType;
     });
+    
 function cleanUpMap(type) {
     switch(type) {
         case 'cleared':
             break;
-        case 'nodes_links':
+        case 'nodes_only':
             nodeLinkG.attr('visibility', 'hidden');
             break;
         case 'states':
-           myMap.removeLayer(statesLayer);
-           break;
+            myMap.removeLayer(statesLayer);
+            break;
         case 'triangle_bins':
-           myMap.removeLayer(triangleLayer);
-           break;
+            myMap.removeLayer(triangleLayer);
+            break;
+        case 'affecting_land_nodes':
+            nodesAffectingLandG.attr('visibility', 'hidden');
+            break;
+        case 'affecting_land_storms':
+            break;
 
     }
 }
@@ -199,19 +209,19 @@ function showOnMap(type) {
     switch(type) {
         case 'cleared':
             break;
-        case 'nodes_links':
-           nodeLinkG.attr('visibility', 'visible');
-           statesLayer.addTo(myMap);
-           break;
+        case 'nodes_only':
+            nodeLinkG.attr('visibility', 'visible');
+            statesLayer.addTo(myMap);
+            break;
         case 'triangle_bins':
-           triangleLayer.addTo(myMap);
-           break;
+            triangleLayer.addTo(myMap);
+            break;
+        case 'affecting_land_nodes':
+            nodesAffectingLandG.attr('visibility', 'visible');
+            break;
+        case 'affecting_land_storms':
+            break;
 
 
     }
 }
-
-
-
-
-
