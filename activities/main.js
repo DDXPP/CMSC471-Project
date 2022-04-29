@@ -12,12 +12,27 @@ var stormsAffectingLandObjects = [];
 var atlLatLng = new L.LatLng(33.52076, -55.06337);
 var myMap = L.map('map').setView(atlLatLng, 3.5);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-         {
-           maxZoom: 10,
-           minZoom: 3,
-           attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
-             }).addTo(myMap);
+// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+//          {
+//             maxZoom: 10,
+//             minZoom: 3,
+//             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+//         }).addTo(myMap);
+
+// L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+//         {
+//             maxZoom: 10,
+//             minZoom: 3,
+//             attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+//         }).addTo(myMap);
+
+L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20,
+            minZoom:3,
+            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+        }).addTo(myMap);
+
+
 
 var svgLayer = L.svg();
 svgLayer.addTo(myMap);
@@ -47,7 +62,7 @@ Promise.all([
 //-----------------------------------------------------------------------------
 function readyToDraw(nodes, states) {
     var colorScale = d3.scaleLinear().domain([-1,5]).range(["#ed6925","#000004","#1b0c41","#4a0c6b","#781c6d","#a52c60","#cf4446"]);
-    var radiusScale = d3.scaleLinear().range([3,5]).domain([-1,5]);
+    var radiusScale = d3.scaleLinear().domain([-1,5]).range([3,5]);
 
     var nodeCollection = turf.featureCollection(nodeFeatures);
 
@@ -117,14 +132,8 @@ function readyToDraw(nodes, states) {
 
     triangleLayer = L.geoJson(triangleBins, {style: triangleStyle});
     //-------------------------------------------------------------
-    //-------------------------------------------------------------
-    statesLayer = L.geoJson(states);
-    statesLayer.addTo(myMap);
-    //-------------------------------------------------------------
-    //-------------------------------------------------------------
-    //-------------------------------------------------------------
-    //-------------------------------------------------------------
     
+    //-------------------------------------------------------------    
 
     nodeLinkG.selectAll('.node-land')
         .data(nodesAffectingLandObjects)
@@ -133,7 +142,7 @@ function readyToDraw(nodes, states) {
         .style('fill', function(d){
            return colorScale(d['category']);
         })
-        .style('fill-opacity', 0.6)
+        .style('fill-opacity', 0.7)
         .attr('r', function(d) {
            return radiusScale(d.category);
         });
@@ -146,7 +155,7 @@ function readyToDraw(nodes, states) {
         .style('fill', function(d){
            return colorScale(d['category']);
         })
-        .style('fill-opacity', 0.6)
+        .style('fill-opacity', 0.7)
         .attr('r', function(d) {
            return radiusScale(d.category);
         });
@@ -159,12 +168,15 @@ function readyToDraw(nodes, states) {
         .style('fill', function(d){
            return colorScale(d['category']);
         })
-        .style('fill-opacity', 0.6)
+        .style('fill-opacity', 0.7)
         .attr('r', function(d) {
            return radiusScale(d.category);
         });
     //-------------------------------------------------------------
-   
+    //-------------------------------------------------------------
+    statesLayer = L.geoJson(states);
+    statesLayer.addTo(myMap);
+    //-------------------------------------------------------------
     myMap.on('zoomend', updateLayers);
     updateLayers();
 }
@@ -225,8 +237,8 @@ function showOnMap(type) {
         case 'cleared':
             break;
         case 'nodes_only':
-            nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
             statesLayer.addTo(myMap);
+            nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
             break;
         case 'triangle_bins':
             triangleLayer.addTo(myMap);
