@@ -165,7 +165,7 @@ function readyToDraw(nodes, states, decadeToggle) {
     nodeLinkG.selectAll('.node-land').attr('visibility', 'hidden');
 
 
-    
+
     nodeLinkG.selectAll('.storm-land')
         .data(stormsAffectingLandObjects)
         .enter().append('circle')
@@ -271,13 +271,13 @@ function onDecadeChanged() {
     var select = d3.select('#decadeSelect').node();
     // Get current value of select element
     var decade = select.options[select.selectedIndex].value;
-    var decadeToggleggg
+    var decadeToggleNew
     switch(decade) {
         case 'all-time':
-            decadeToggleggg = 'visible'
+            decadeToggleNew = 'visible'
             break;
         case 'before-1980':
-            decadeToggleggg = 'hidden'
+            decadeToggleNew = 'hidden'
             break;
     }
     
@@ -303,7 +303,7 @@ function onDecadeChanged() {
     ]).then(function(data) {
         var nodes = data[0];
         var states = data[1];
-        readyToDraw(nodes, states, decadeToggleggg)
+        readyToDraw(nodes, states, decadeToggleNew)
         nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
     });
 
