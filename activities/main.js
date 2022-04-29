@@ -26,10 +26,6 @@ var svg = d3.select('#map').select('svg');
 var nodeLinkG = svg.select('g')
     .attr('class', 'leaflet-zoom-hide');
 
-var nodesAffectingLandG = svg.select('g')
-    .attr('class', 'leaflet-zoom-hide');
-
-
 //-----------------------------------------------------------------------------
 Promise.all([
     d3.csv('stormz.csv', function(row) {
@@ -126,24 +122,14 @@ function readyToDraw(nodes, states) {
     statesLayer.addTo(myMap);
     //-------------------------------------------------------------
     //-------------------------------------------------------------
-    nodesAffectingLandG.selectAll('.grid-node')
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
+    
+
+    nodeLinkG.selectAll('.node-land')
         .data(nodesAffectingLandObjects)
         .enter().append('circle')
-        .attr('class', 'grid-node')
-        .style('fill', function(d){
-            return colorScale(d['category']);
-        })
-        .style('fill-opacity', 0.6)
-        .attr('r', function(d) {
-            return radiusScale(d.category);
-        });
-    
-    //-------------------------------------------------------------
-    //-------------------------------------------------------------
-    nodeLinkG.selectAll('.grid-node')
-        .data(nodes)
-        .enter().append('circle')
-        .attr('class', 'grid-node')
+        .attr('class', 'node-land')
         .style('fill', function(d){
            return colorScale(d['category']);
         })
@@ -151,7 +137,32 @@ function readyToDraw(nodes, states) {
         .attr('r', function(d) {
            return radiusScale(d.category);
         });
+    nodeLinkG.selectAll('.node-land').attr('visibility', 'hidden');
 
+    nodeLinkG.selectAll('.storm-land')
+        .data(stormsAffectingLandObjects)
+        .enter().append('circle')
+        .attr('class', 'storm-land')
+        .style('fill', function(d){
+           return colorScale(d['category']);
+        })
+        .style('fill-opacity', 0.6)
+        .attr('r', function(d) {
+           return radiusScale(d.category);
+        });
+    nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
+
+    nodeLinkG.selectAll('.node-normal')
+        .data(nodes)
+        .enter().append('circle')
+        .attr('class', 'node-normal')
+        .style('fill', function(d){
+           return colorScale(d['category']);
+        })
+        .style('fill-opacity', 0.6)
+        .attr('r', function(d) {
+           return radiusScale(d.category);
+        });
     //-------------------------------------------------------------
    
     myMap.on('zoomend', updateLayers);
@@ -161,10 +172,13 @@ function readyToDraw(nodes, states) {
 
 //-----------------------------------------------------------------------------
 function updateLayers() {
-    nodeLinkG.selectAll('.grid-node')
+    nodeLinkG.selectAll('.node-normal')
        .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
        .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
-    nodesAffectingLandG.selectAll('.grid-node')
+    nodeLinkG.selectAll('.node-land')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+    nodeLinkG.selectAll('.storm-land')
        .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
        .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
 };
@@ -188,7 +202,7 @@ function cleanUpMap(type) {
         case 'cleared':
             break;
         case 'nodes_only':
-            nodeLinkG.attr('visibility', 'hidden');
+            nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
             break;
         case 'states':
             myMap.removeLayer(statesLayer);
@@ -197,9 +211,10 @@ function cleanUpMap(type) {
             myMap.removeLayer(triangleLayer);
             break;
         case 'affecting_land_nodes':
-            nodesAffectingLandG.attr('visibility', 'hidden');
+            nodeLinkG.selectAll('.node-land').attr('visibility', 'hidden');
             break;
         case 'affecting_land_storms':
+            nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
             break;
 
     }
@@ -210,16 +225,19 @@ function showOnMap(type) {
         case 'cleared':
             break;
         case 'nodes_only':
-            nodeLinkG.attr('visibility', 'visible');
+            nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
             statesLayer.addTo(myMap);
             break;
         case 'triangle_bins':
             triangleLayer.addTo(myMap);
             break;
         case 'affecting_land_nodes':
-            nodesAffectingLandG.attr('visibility', 'visible');
+            // nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
+            // nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
+            nodeLinkG.selectAll('.node-land').attr('visibility', 'visible');
             break;
         case 'affecting_land_storms':
+            nodeLinkG.selectAll('.storm-land').attr('visibility', 'visible');
             break;
 
 
