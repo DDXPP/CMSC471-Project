@@ -10,6 +10,7 @@ label.btn.btn-secondary.active:active {
 body {
     font-family: "Open Sans";
     margin: 0;
+    font-size: 20px;
 }
 
 #main {

@@ -8,24 +8,39 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+    <div><h1 align="center"><u>Hurricanes in the Atlantic: Their severity and destruction over time!</u></h1></div>
+    <br><br>
+    <div class="container">
+        <p>This is an visualization exercise in showcasing hurricane activity in the Atlantic over the last 5 decades. We discuss their severity, their size and their frequency of reaching land. We use a few visualization that highlight the aforementioned changes as found in our dataset. This web app allows the viewer to observe our data transformed and plotted to allowing them to follow trends and recognise patterns in hurricanes over the past half century!
+        </p><br>
+        <p>
+            The visualization below is a line graph showing the relation between Anually largest Tropical Storm and Hurricane diameters as well as their trends over the years. 
+            We can see that there is a significant swing in hurricane diameter from year to year, with particularly large hurricanes occurring every several years. There is also a weak upward trend of diameter over time, with tropical storm diameters increasing by 6 nautical miles per year and hurricane diameter increasing by 2 nautical miles per year.
+        </p>
+        <img src="sub_task_1.jpeg" height="500" width="1150" align="left"><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <p>
+            Now we want to show how the severity and count of hurricanes have fared over time. As shown in the next visualization for this task –  while there are more severe hurricanes over time, there are proportionally more mild storms over time, therefore the average severity is actually decreasing.
+            The visualisation below shows the number of hurricanes for each year. The darkness of the bar indicates the peak severity reached by the hurricane.  
+
+        </p>
+        <img src="sub_task_2.jpeg" height="400" width="1200" align="left"><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+        As a culmination of our tasks, we wanted to explore how many of these hurricanes have had possibly devastating affects. To do so we created a GeoJSON that encompassed the landmasses affected by the hurricanes. The visualisation below allows one to filter by decade and whether a hurricane hit land or not. The intention was to visualize the frequency of damage causing storms and hurricane as a timeseries.
+         <br><br><strong>The size of the data point shows the severity. While the color indicates the hurricane's path</strong><br><br><br>
+
+        <strong>Some key takeaways are:</strong> <li>About 48.8% of storms and hurricanes hit and affect landmass therefore causing personal and property damage.</li> <br> <li>The percentage of storms and hurricanes that have affected landmass have considerably decreased over the last 5 decades. (From 63% in the 70's to 39% in the 2010's</li><br>
+    </div>
     <div id="main">
         <div class="btn-group btn-group-sm" data-toggle="buttons">
-            <!-- <label class="btn btn-secondary"  data-type="cleared">
-                <input type="checkbox" name="options" autocomplete="off">Cleared
-            </label> -->
+            
             
 
             <label class="btn btn-secondary active" data-type="nodes_only">
                 <input type="checkbox" name="options" autocomplete="off" checked>All Huricanes
             </label>
-            <!-- <label class="btn btn-secondary"  data-type="states">
-                <input type="checkbox" name="options" autocomplete="off">States
-            </label> -->
-            <!-- <label class="btn btn-secondary"  data-type="affecting_land_nodes">
-                <input type="checkbox" name="options" autocomplete="off"> Affecting Land Nodes
-            </label> -->
+            
             <label class="btn btn-secondary"  data-type="affecting_land_storms">
-                <input type="checkbox" name="options" autocomplete="off"> Land-affecting Hurricanes
+                <input type="checkbox" name="options" autocomplete="off"> Land-hitting Hurricanes
             </label> 
 
             <label for="decadeSelect">Choose time: </label>
@@ -38,27 +53,11 @@
               <option value="after-2010">After 2010</option>
             </select>
 
-            <!-- <label for="decadeSelect2">Land-affecting hurricanes: </label>
-            <select class="custom-select" id="decadeSelect2" onchange="onDecadeChanged2()">
-              <option selected value="all-time-land-storm">All Time</option>
-              <option value="before-1979-land-storm">Before 1979</option>
-              <option value="1980-1989-land-storm">1980-1989</option>
-              <option value="1990-1999-land-storm">1990-1999</option>
-              <option value="2000-2009-land-storm">2000-2009</option>
-              <option value="after-2010-land-storm">After 2010</option>
-            </select> -->
         </div>
-        <!-- <div>
-            <label for="decadeSelect">Show: </label>
-            <select class="custom-select" id="decadeSelect" onchange="onDecadeChanged()">
-              <option selected value="all-time">All Time</option>
-              <option value="before-1980">Before 1980</option>
-            </select>
-        </div> -->
-        <div id="map" style="height: 720px; width: 960px; border: 1px solid #777;">
+        
+        <div id="map" style="height: 680px; width: 1250px; border: 1px solid #777;">
         </div>
-        <!-- <svg width="960" height="720" style="border: 1px solid #777;">
-        </svg> -->
+        
     </div>
 </body>
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>

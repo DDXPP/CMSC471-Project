@@ -23,13 +23,21 @@ var storms_2000_2009 = []
 var storms_after_2010 = []
 
 
-var atlLatLng = new L.LatLng(33.52076, -55.06337);
-var myMap = L.map('map').setView(atlLatLng, 3.5);
+var atlLatLng = new L.LatLng(30.52076, -58.06337);
+var myMap = L.map('map', { doubleClickZoom: false, 
+  zoomControl: false,
+  closePopupOnClick: false, 
+  dragging: false, 
+  zoomSnap: false, 
+  zoomDelta: false, 
+  trackResize: false,
+  touchZoom: false,
+  scrollWheelZoom: false}).setView(atlLatLng, 4);
 
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
             maxZoom: 20,
-            minZoom:3,
+            minZoom:3.5,
             attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
         }).addTo(myMap);
 
@@ -64,7 +72,7 @@ Promise.all([
 function readyToDraw(nodes, states) {
     var colorScale = d3.scaleLinear().domain([-1,5]).range(["#ed6925","#000004","#1b0c41","#4a0c6b","#781c6d","#a52c60","#cf4446"]);
     
-    var radiusScale = d3.scaleLinear().domain([-1,5]).range([4,6]);
+    var radiusScale = d3.scaleLinear().domain([-1,5]).range([3,5]);
     //-------------------------------------------------------------
     var poly0 = turf.polygon(states.features[0].geometry.coordinates)
     var poly1 = turf.polygon(states.features[1].geometry.coordinates)
@@ -373,7 +381,7 @@ function readyToDraw(nodes, states) {
     //-------------------------------------------------------------
     //-------------------------------------------------------------
     statesLayer = L.geoJson(states);
-    statesLayer.addTo(myMap);
+    
     //-------------------------------------------------------------
     myMap.on('zoomend', updateLayers);
     updateLayers();
@@ -462,7 +470,7 @@ function showOnMap(type) {
     switch(type) {
         case 'nodes_only':
             if (activeDecade == 'all-time') {
-                statesLayer.addTo(myMap);
+                
                 nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
             } else if (activeDecade == 'before-1979') {
                 nodeLinkG.selectAll('.node-1979').attr('visibility', 'visible');
@@ -478,7 +486,7 @@ function showOnMap(type) {
             break;
         case 'affecting_land_storms':
             if (activeDecade == 'all-time') {
-                statesLayer.addTo(myMap);
+                
                 nodeLinkG.selectAll('.storm-land').attr('visibility', 'visible');
             } else if (activeDecade == 'before-1979') {
                 nodeLinkG.selectAll('.node-1979-land-storm').attr('visibility', 'visible');
@@ -522,7 +530,7 @@ function onDecadeChanged() {
 function showOnMapAllNodes(activeDecade) {
     switch(activeDecade) {
         case 'all-time':
-            statesLayer.addTo(myMap);
+            
             nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
             break;
 
