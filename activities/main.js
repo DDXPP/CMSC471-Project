@@ -64,7 +64,7 @@ Promise.all([
 function readyToDraw(nodes, states) {
     var colorScale = d3.scaleLinear().domain([-1,5]).range(["#ed6925","#000004","#1b0c41","#4a0c6b","#781c6d","#a52c60","#cf4446"]);
     
-    var radiusScale = d3.scaleLinear().domain([-1,5]).range([3,5]);
+    var radiusScale = d3.scaleLinear().domain([-1,5]).range([4,6]);
     //-------------------------------------------------------------
     var poly0 = turf.polygon(states.features[0].geometry.coordinates)
     var poly1 = turf.polygon(states.features[1].geometry.coordinates)
