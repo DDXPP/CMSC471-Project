@@ -9,13 +9,23 @@ var nodesAffectingLandObjects = [];
 var nodesAffectingLandObjectsDistinctNames = [];
 var stormsAffectingLandObjects = [];
 
+var nodes_before_1979 = []
+var nodes_1980_1989 = []
 var nodes_1990_1999 = []
+var nodes_2000_2009 = []
+var nodes_after_2010 = []
+
+var storms_before_1979 = []
+var storms_1980_1989 = []
 var storms_1990_1999 = []
+var storms_2000_2009 = []
+var storms_after_2010 = []
+
+
 
 var atlLatLng = new L.LatLng(33.52076, -55.06337);
 var myMap = L.map('map').setView(atlLatLng, 3.5);
 
-var node, states, decadeToggle
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
             maxZoom: 20,
@@ -45,14 +55,13 @@ Promise.all([
     }),
     d3.json('poly_final.json')//geojson
 ]).then(function(data) {
-    nodes = data[0];
-    states = data[1];
-    decadeToggle = 'visible'
-    readyToDraw(nodes, states, decadeToggle)
+    var nodes = data[0];
+    var states = data[1];
+    readyToDraw(nodes, states)
 });
 
 //-----------------------------------------------------------------------------
-function readyToDraw(nodes, states, decadeToggle) {
+function readyToDraw(nodes, states) {
     var colorScale = d3.scaleLinear().domain([-1,5]).range(["#ed6925","#000004","#1b0c41","#4a0c6b","#781c6d","#a52c60","#cf4446"]);
     var radiusScale = d3.scaleLinear().domain([-1,5]).range([3,5]);
     //-------------------------------------------------------------
@@ -91,6 +100,83 @@ function readyToDraw(nodes, states, decadeToggle) {
 
     //-------------------------------------------------------------
     //-------------------------------------------------------------
+    nodes.forEach(function (n) {
+        if (n.year <=1979) {
+            nodes_before_1979.push(n);
+        }
+    
+    });
+
+    nodes.forEach(function (n) {
+        if (n.year >= 1980 && n.year <=1989) {
+            nodes_1980_1989.push(n);
+        }
+    
+    });
+
+    nodes.forEach(function (n) {
+        if (n.year >= 1990 && n.year <=1999) {
+            nodes_1990_1999.push(n);
+        }
+    
+    });
+
+    nodes.forEach(function (n) {
+        if (n.year >= 2000 && n.year <=2009) {
+            nodes_2000_2009.push(n);
+        }
+    
+    });
+
+    nodes.forEach(function (n) {
+        if (n.year >= 2010) {
+            nodes_after_2010.push(n);
+        }
+    
+    });
+
+    //------------------------------------------------------
+
+    stormsAffectingLandObjects.forEach(function (n) {
+        if (n.year <=1979) {
+            storms_before_1979.push(n);
+        }
+    
+    });
+
+    stormsAffectingLandObjects.forEach(function (n) {
+        if (n.year >= 1980 && n.year <=1989) {
+            storms_1980_1989.push(n);
+        }
+    
+    });
+
+    stormsAffectingLandObjects.forEach(function (n) {
+        if (n.year >= 1990 && n.year <=1999) {
+            storms_1990_1999.push(n);
+        }
+    
+    });
+
+    stormsAffectingLandObjects.forEach(function (n) {
+        if (n.year >= 2000 && n.year <=2009) {
+            storms_2000_2009.push(n);
+        }
+    
+    });
+
+    stormsAffectingLandObjects.forEach(function (n) {
+        if (n.year >= 2010) {
+            storms_after_2010.push(n);
+        }
+    
+    });
+
+
+    //-------------------------------------------------------------
+    //-------------------------------------------------------------
+
+    
 
 
     
@@ -108,17 +194,6 @@ function readyToDraw(nodes, states, decadeToggle) {
     .data(nodes)
     .enter().append('circle')
     .attr('class', 'node-normal')
-    .attr('visibility', function(d) {
-        if (d['year']<1980) {
-            console.log("<1980"+decadeToggle)
-            return 'visible'
-        }
-        else {
-            console.log(">>>>>1980"+decadeToggle)
-            return decadeToggle
-        }
-        // return d['year']<1980 ? 'visible' : decadeToggle
-    })
     .style('fill', function(d){
        return colorScale(d['category']);
     })
@@ -128,8 +203,6 @@ function readyToDraw(nodes, states, decadeToggle) {
     });
     // nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
     
-    console.log(decadeToggle)
-
 
 
     nodeLinkG.selectAll('.node-land')
@@ -160,7 +233,141 @@ function readyToDraw(nodes, states, decadeToggle) {
         });
     nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
 
-    
+    //--------------------------------------------------------------
+    nodeLinkG.selectAll('.node-1979')
+        .data(nodes_before_1979)
+        .enter().append('circle')
+        .attr('class', 'node-1979')
+        .style('fill', function(d){
+        return colorScale(d['category']);
+        })
+        .style('fill-opacity', 0.7)
+        .attr('r', function(d) {
+        return radiusScale(d.category);
+        });
+    nodeLinkG.selectAll('.node-1979').attr('visibility', 'hidden');
+
+
+    nodeLinkG.selectAll('.node-1980-1989')
+        .data(nodes_1980_1989)
+        .enter().append('circle')
+        .attr('class', 'node-1980-1989')
+        .style('fill', function(d){
+        return colorScale(d['category']);
+        })
+        .style('fill-opacity', 0.7)
+        .attr('r', function(d) {
+        return radiusScale(d.category);
+        });
+    nodeLinkG.selectAll('.node-1980-1989').attr('visibility', 'hidden');
+
+
+    nodeLinkG.selectAll('.node-1990-1999')
+        .data(nodes_1990_1999)
+        .enter().append('circle')
+        .attr('class', 'node-1990-1999')
+        .style('fill', function(d){
+        return colorScale(d['category']);
+        })
+        .style('fill-opacity', 0.7)
+        .attr('r', function(d) {
+        return radiusScale(d.category);
+        });
+    nodeLinkG.selectAll('.node-1990-1999').attr('visibility', 'hidden');
+
+    nodeLinkG.selectAll('.node-2000-2009')
+        .data(nodes_2000_2009)
+        .enter().append('circle')
+        .attr('class', 'node-2000-2009')
+        .style('fill', function(d){
+        return colorScale(d['category']);
+        })
+        .style('fill-opacity', 0.7)
+        .attr('r', function(d) {
+        return radiusScale(d.category);
+        });
+    nodeLinkG.selectAll('.node-2000-2009').attr('visibility', 'hidden');
+
+    nodeLinkG.selectAll('.node-2010')
+        .data(nodes_after_2010)
+        .enter().append('circle')
+        .attr('class', 'node-2010')
+        .style('fill', function(d){
+        return colorScale(d['category']);
+        })
+        .style('fill-opacity', 0.7)
+        .attr('r', function(d) {
+        return radiusScale(d.category);
+        });
+    nodeLinkG.selectAll('.node-2010').attr('visibility', 'hidden');
+
+    //--------------------------------------------------------------
+    nodeLinkG.selectAll('.node-1979-land-storm')
+    .data(storms_before_1979)
+    .enter().append('circle')
+    .attr('class', 'node-1979-land-storm')
+    .style('fill', function(d){
+    return colorScale(d['category']);
+    })
+    .style('fill-opacity', 0.7)
+    .attr('r', function(d) {
+    return radiusScale(d.category);
+    });
+    nodeLinkG.selectAll('.node-1979-land-storm').attr('visibility', 'hidden');
+
+
+    nodeLinkG.selectAll('.node-1980-1989-land-storm')
+    .data(storms_1980_1989)
+    .enter().append('circle')
+    .attr('class', 'node-1980-1989-land-storm')
+    .style('fill', function(d){
+    return colorScale(d['category']);
+    })
+    .style('fill-opacity', 0.7)
+    .attr('r', function(d) {
+    return radiusScale(d.category);
+    });
+    nodeLinkG.selectAll('.node-1980-1989-land-storm').attr('visibility', 'hidden');
+
+
+    nodeLinkG.selectAll('.node-1990-1999-land-storm')
+    .data(storms_1990_1999)
+    .enter().append('circle')
+    .attr('class', 'node-1990-1999-land-storm')
+    .style('fill', function(d){
+    return colorScale(d['category']);
+    })
+    .style('fill-opacity', 0.7)
+    .attr('r', function(d) {
+    return radiusScale(d.category);
+    });
+    nodeLinkG.selectAll('.node-1990-1999-land-storm').attr('visibility', 'hidden');
+
+    nodeLinkG.selectAll('.node-2000-2009-land-storm')
+    .data(storms_2000_2009)
+    .enter().append('circle')
+    .attr('class', 'node-2000-2009-land-storm')
+    .style('fill', function(d){
+    return colorScale(d['category']);
+    })
+    .style('fill-opacity', 0.7)
+    .attr('r', function(d) {
+    return radiusScale(d.category);
+    });
+    nodeLinkG.selectAll('.node-2000-2009-land-storm').attr('visibility', 'hidden');
+
+    nodeLinkG.selectAll('.node-2010-land-storm')
+    .data(storms_after_2010)
+    .enter().append('circle')
+    .attr('class', 'node-2010')
+    .style('fill', function(d){
+    return colorScale(d['category']);
+    })
+    .style('fill-opacity', 0.7)
+    .attr('r', function(d) {
+    return radiusScale(d.category);
+    });
+    nodeLinkG.selectAll('.node-2010-land-storm').attr('visibility', 'hidden');
     //-------------------------------------------------------------
     //-------------------------------------------------------------
     statesLayer = L.geoJson(states);
@@ -182,6 +389,40 @@ function updateLayers() {
     nodeLinkG.selectAll('.storm-land')
        .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
        .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+
+
+       nodeLinkG.selectAll('.node-1979')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+       nodeLinkG.selectAll('.node-1980-1989')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+       nodeLinkG.selectAll('.node-1990-1999')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+       nodeLinkG.selectAll('.node-2000-2009')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+       nodeLinkG.selectAll('.node-2010')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+
+       nodeLinkG.selectAll('.node-1979-land-storm')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+       nodeLinkG.selectAll('.node-1980-1989-land-storm')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+       nodeLinkG.selectAll('.node-1990-1999-land-storm')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+       nodeLinkG.selectAll('.node-2000-2009-land-storm')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+       nodeLinkG.selectAll('.node-2010-land-storm')
+       .attr('cx', function(d){return myMap.latLngToLayerPoint(d.LatLng).x})
+       .attr('cy', function(d){return myMap.latLngToLayerPoint(d.LatLng).y})
+
 };
 
 
@@ -205,6 +446,9 @@ function cleanUpMap(type) {
         case 'nodes_only':
             nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
             break;
+        case 'all-time':
+            nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
+            break;
         case 'states':
             myMap.removeLayer(statesLayer);
             break;
@@ -214,7 +458,44 @@ function cleanUpMap(type) {
         case 'affecting_land_storms':
             nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
             break;
+        case 'all-time-land-storm':
+            nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
+            break;
 
+        
+        case 'before-1979':
+            nodeLinkG.selectAll('.node-1979').attr('visibility', 'hidden');
+            break;
+        case '1980-1989':
+            nodeLinkG.selectAll('.node-1980-1989').attr('visibility', 'hidden');
+            break;
+        case '1990-1999':
+            nodeLinkG.selectAll('.node-1990-1999').attr('visibility', 'hidden');
+            break;
+        case '2000-2009':
+            nodeLinkG.selectAll('.node-2000-2009').attr('visibility', 'hidden');
+            break;
+        case 'after-2010':
+            nodeLinkG.selectAll('.node-2010').attr('visibility', 'hidden');
+            break;
+
+
+
+        case 'before-1979-land-storm':
+            nodeLinkG.selectAll('.node-1979-land-storm').attr('visibility', 'hidden');
+            break;
+        case '1980-1989-land-storm':
+            nodeLinkG.selectAll('.node-1980-1989-land-storm').attr('visibility', 'hidden');
+            break;
+        case '1990-1999-land-storm':
+            nodeLinkG.selectAll('.node-1990-1999-land-storm').attr('visibility', 'hidden');
+            break;
+        case '2000-2009-land-storm':
+            nodeLinkG.selectAll('.node-2000-2009-land-storm').attr('visibility', 'hidden');
+            break;
+        case 'after-2010-land-storm':
+            nodeLinkG.selectAll('.node-2010-land-storm').attr('visibility', 'hidden');
+            break;
     }
 }
 
@@ -226,6 +507,10 @@ function showOnMap(type) {
             statesLayer.addTo(myMap);
             nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
             break;
+        case 'all-time':
+            statesLayer.addTo(myMap);
+            nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
+            break;
         case 'affecting_land_nodes':
             // nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
             // nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
@@ -233,6 +518,43 @@ function showOnMap(type) {
             break;
         case 'affecting_land_storms':
             nodeLinkG.selectAll('.storm-land').attr('visibility', 'visible');
+            break;
+
+        case 'all-time-land-storm':
+            nodeLinkG.selectAll('.storm-land').attr('visibility', 'visible');
+            break;
+
+        case 'before-1979':
+            nodeLinkG.selectAll('.node-1979').attr('visibility', 'visible');
+            break;
+        case '1980-1989':
+            nodeLinkG.selectAll('.node-1980-1989').attr('visibility', 'visible');
+            break;
+        case '1990-1999':
+            nodeLinkG.selectAll('.node-1990-1999').attr('visibility', 'visible');
+            break;
+        case '2000-2009':
+            nodeLinkG.selectAll('.node-2000-2009').attr('visibility', 'visible');
+            break;
+        case 'after-2010':
+            nodeLinkG.selectAll('.node-2010').attr('visibility', 'visible');
+            break;
+
+
+        case 'before-1979-land-storm':
+            nodeLinkG.selectAll('.node-1979-land-storm').attr('visibility', 'visible');
+            break;
+        case '1980-1989-land-storm':
+            nodeLinkG.selectAll('.node-1980-1989-land-storm').attr('visibility', 'visible');
+            break;
+        case '1990-1999-land-storm':
+            nodeLinkG.selectAll('.node-1990-1999-land-storm').attr('visibility', 'visible');
+            break;
+        case '2000-2009-land-storm':
+            nodeLinkG.selectAll('.node-2000-2009-land-storm').attr('visibility', 'visible');
+            break;
+        case 'after-2010-land-storm':
+            nodeLinkG.selectAll('.node-2010-land-storm').attr('visibility', 'visible');
             break;
     }
 }
@@ -243,41 +565,34 @@ function showOnMap(type) {
 function onDecadeChanged() {
     var select = d3.select('#decadeSelect').node();
     // Get current value of select element
-    var decade = select.options[select.selectedIndex].value;
-    var decadeToggleNew
-    switch(decade) {
-        case 'all-time':
-            decadeToggleNew = 'visible'
-            break;
-        case 'before-1980':
-            decadeToggleNew = 'hidden'
-            break;
-    }
-    
-
-    readyToDraw(nodes, states, decadeToggleNew)
-    // nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
-    myMap.removeLayer(statesLayer);
+    var newMapType = select.options[select.selectedIndex].value;
 
 
-    // Promise.all([
-    //     d3.csv('stormz.csv', function(row) {
-    //         var node = {v_id: +row['v_id'], name: row['name'], LatLng: [+row['lat'], +row['long']], status: row['status'],
-    //            wind: +row['wind'], pressure: +row['pressure'], category: +row['category'], year: +row['year'], NameYear: [row['name']+row['year']]};
-    //        // vertices.set(node.v_id, node);
-    //        node.linkCount = 0;
-    //        nodeFeatures.push(turf.point([+row['long'], +row['lat']], node));
-    //        return node;
-    
-    //     }),
-    //     d3.json('poly_final.json')//geojson
-    // ]).then(function(data) {
-    //     var nodes = data[0];
-    //     var states = data[1];
-    //     readyToDraw(nodes, states, decadeToggleNew)
-    //     nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
-    // });
 
-    // console.log(nodeLinkG.selectAll('.node-normal'))
-    // nodeLinkG.selectAll('.node-normal').attr('visibility', 'visible');
+    // var newMapType = d3.select(this).attr('data-type');
+
+    d3.selectAll('.btn.btn-secondary.active').classed('active', false);
+
+    cleanUpMap(activeMapType);
+    showOnMap(newMapType);
+
+    activeMapType = newMapType;
+}
+
+
+function onDecadeChanged2() {
+    var select = d3.select('#decadeSelect2').node();
+    // Get current value of select element
+    var newMapType = select.options[select.selectedIndex].value;
+
+
+
+    // var newMapType = d3.select(this).attr('data-type');
+
+    d3.selectAll('.btn.btn-secondary.active').classed('active', false);
+
+    cleanUpMap(activeMapType);
+    showOnMap(newMapType);
+
+    activeMapType = newMapType;
 }

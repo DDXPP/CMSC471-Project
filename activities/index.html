@@ -27,10 +27,25 @@
             <label class="btn btn-secondary"  data-type="affecting_land_storms">
                 <input type="checkbox" name="options" autocomplete="off"> Affecting Land Storms
             </label> 
-            <label for="decadeSelect">Show: </label>
+
+            <label for="decadeSelect">All hurricanes: </label>
             <select class="custom-select" id="decadeSelect" onchange="onDecadeChanged()">
               <option selected value="all-time">All Time</option>
-              <option value="before-1980">Before 1980</option>
+              <option value="before-1979">Before 1979</option>
+              <option value="1980-1989">1980-1989</option>
+              <option value="1990-1999">1990-1999</option>
+              <option value="2000-2009">2000-2009</option>
+              <option value="after-2010">After 2010</option>
+            </select>
+
+            <label for="decadeSelect2">Land-affecting hurricanes: </label>
+            <select class="custom-select" id="decadeSelect2" onchange="onDecadeChanged2()">
+              <option selected value="all-time-land-storm">All Time</option>
+              <option value="before-1979-land-storm">Before 1979</option>
+              <option value="1980-1989-land-storm">1980-1989</option>
+              <option value="1990-1999-land-storm">1990-1999</option>
+              <option value="2000-2009-land-storm">2000-2009</option>
+              <option value="after-2010-land-storm">After 2010</option>
             </select>
         </div>
         <!-- <div>
