@@ -23,7 +23,6 @@ var storms_2000_2009 = []
 var storms_after_2010 = []
 
 
-
 var atlLatLng = new L.LatLng(33.52076, -55.06337);
 var myMap = L.map('map').setView(atlLatLng, 3.5);
 
@@ -64,6 +63,7 @@ Promise.all([
 //-----------------------------------------------------------------------------
 function readyToDraw(nodes, states) {
     var colorScale = d3.scaleLinear().domain([-1,5]).range(["#ed6925","#000004","#1b0c41","#4a0c6b","#781c6d","#a52c60","#cf4446"]);
+    
     var radiusScale = d3.scaleLinear().domain([-1,5]).range([3,5]);
     //-------------------------------------------------------------
     var poly0 = turf.polygon(states.features[0].geometry.coordinates)
@@ -92,6 +92,7 @@ function readyToDraw(nodes, states) {
             nodesAffectingLandObjectsDistinctNames.push(nameTemp);
         }
     };
+
 
     nodes.forEach(function (n) {
         if (nodesAffectingLandObjectsDistinctNames.includes(n.NameYear[0])) {
@@ -149,7 +150,6 @@ function readyToDraw(nodes, states) {
         if (n.year >= 1980 && n.year <=1989) {
             storms_1980_1989.push(n);
         }
-    
     });
 
     stormsAffectingLandObjects.forEach(function (n) {
@@ -190,13 +190,14 @@ function readyToDraw(nodes, states) {
     //-------------------------------------------------------------    
 
 
-
+    var nodeTypes = d3.map(nodes, function(d){return d.name;}).keys();
+    var colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(nodeTypes);
     nodeLinkG.selectAll('.node-normal')
     .data(nodes)
     .enter().append('circle')
     .attr('class', 'node-normal')
     .style('fill', function(d){
-       return colorScale(d['category']);
+        return colorScale(d['name']);
     })
     .style('fill-opacity', 0.7)
     .attr('r', function(d) {
@@ -211,7 +212,7 @@ function readyToDraw(nodes, states) {
         .enter().append('circle')
         .attr('class', 'node-land')
         .style('fill', function(d){
-           return colorScale(d['category']);
+           return colorScale(d['name']);
         })
         .style('fill-opacity', 0.7)
         .attr('r', function(d) {
@@ -226,7 +227,7 @@ function readyToDraw(nodes, states) {
         .enter().append('circle')
         .attr('class', 'storm-land')
         .style('fill', function(d){
-           return colorScale(d['category']);
+           return colorScale(d['name']);
         })
         .style('fill-opacity', 0.7)
         .attr('r', function(d) {
@@ -240,7 +241,7 @@ function readyToDraw(nodes, states) {
         .enter().append('circle')
         .attr('class', 'node-1979')
         .style('fill', function(d){
-        return colorScale(d['category']);
+        return colorScale(d['name']);
         })
         .style('fill-opacity', 0.7)
         .attr('r', function(d) {
@@ -254,7 +255,7 @@ function readyToDraw(nodes, states) {
         .enter().append('circle')
         .attr('class', 'node-1980-1989')
         .style('fill', function(d){
-        return colorScale(d['category']);
+        return colorScale(d['name']);
         })
         .style('fill-opacity', 0.7)
         .attr('r', function(d) {
@@ -268,7 +269,7 @@ function readyToDraw(nodes, states) {
         .enter().append('circle')
         .attr('class', 'node-1990-1999')
         .style('fill', function(d){
-        return colorScale(d['category']);
+        return colorScale(d['name']);
         })
         .style('fill-opacity', 0.7)
         .attr('r', function(d) {
@@ -281,7 +282,7 @@ function readyToDraw(nodes, states) {
         .enter().append('circle')
         .attr('class', 'node-2000-2009')
         .style('fill', function(d){
-        return colorScale(d['category']);
+        return colorScale(d['name']);
         })
         .style('fill-opacity', 0.7)
         .attr('r', function(d) {
@@ -294,7 +295,7 @@ function readyToDraw(nodes, states) {
         .enter().append('circle')
         .attr('class', 'node-2010')
         .style('fill', function(d){
-        return colorScale(d['category']);
+        return colorScale(d['name']);
         })
         .style('fill-opacity', 0.7)
         .attr('r', function(d) {
@@ -308,7 +309,7 @@ function readyToDraw(nodes, states) {
     .enter().append('circle')
     .attr('class', 'node-1979-land-storm')
     .style('fill', function(d){
-    return colorScale(d['category']);
+    return colorScale(d['name']);
     })
     .style('fill-opacity', 0.7)
     .attr('r', function(d) {
@@ -322,7 +323,7 @@ function readyToDraw(nodes, states) {
     .enter().append('circle')
     .attr('class', 'node-1980-1989-land-storm')
     .style('fill', function(d){
-    return colorScale(d['category']);
+    return colorScale(d['name']);
     })
     .style('fill-opacity', 0.7)
     .attr('r', function(d) {
@@ -336,7 +337,7 @@ function readyToDraw(nodes, states) {
     .enter().append('circle')
     .attr('class', 'node-1990-1999-land-storm')
     .style('fill', function(d){
-    return colorScale(d['category']);
+    return colorScale(d['name']);
     })
     .style('fill-opacity', 0.7)
     .attr('r', function(d) {
@@ -349,7 +350,7 @@ function readyToDraw(nodes, states) {
     .enter().append('circle')
     .attr('class', 'node-2000-2009-land-storm')
     .style('fill', function(d){
-    return colorScale(d['category']);
+    return colorScale(d['name']);
     })
     .style('fill-opacity', 0.7)
     .attr('r', function(d) {
@@ -362,7 +363,7 @@ function readyToDraw(nodes, states) {
     .enter().append('circle')
     .attr('class', 'node-2010-land-storm')
     .style('fill', function(d){
-    return colorScale(d['category']);
+    return colorScale(d['name']);
     })
     .style('fill-opacity', 0.7)
     .attr('r', function(d) {
@@ -438,19 +439,9 @@ d3.selectAll('.btn-group > .btn.btn-secondary')
         showOnMap(newMapType);
 
         activeMapType = newMapType;
-        console.log(activeDecade)
-        console.log(activeMapType)
     });
     
 function cleanUpMap(type) {
-    // switch(type) {
-    //     case 'nodes_only':
-    //         nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
-    //         break;
-    //     case 'affecting_land_storms':
-    //         nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
-    //         break;
-    // }
     nodeLinkG.selectAll('.node-normal').attr('visibility', 'hidden');
     nodeLinkG.selectAll('.storm-land').attr('visibility', 'hidden');
     nodeLinkG.selectAll('.node-1979').attr('visibility', 'hidden');
@@ -526,8 +517,6 @@ function onDecadeChanged() {
     }
 
     activeDecade = newDecade
-    console.log(activeDecade)
-    console.log(activeMapType)
 }
 
 function showOnMapAllNodes(activeDecade) {
