@@ -16,3 +16,8 @@ body {
 #main {
     margin: 20px;
 }
+
+.btn-group {
+    display: flex;
+    justify-content: center;
+  }
