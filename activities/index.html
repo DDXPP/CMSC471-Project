@@ -10,13 +10,13 @@
 <body>
     <div id="main">
         <div class="btn-group btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-secondary"  data-type="cleared">
+            <!-- <label class="btn btn-secondary"  data-type="cleared">
                 <input type="checkbox" name="options" autocomplete="off">Cleared
-            </label>
+            </label> -->
             
 
             <label class="btn btn-secondary active" data-type="nodes_only">
-                <input type="checkbox" name="options" autocomplete="off" checked>Nodes Only
+                <input type="checkbox" name="options" autocomplete="off" checked>All Huricanes
             </label>
             <!-- <label class="btn btn-secondary"  data-type="states">
                 <input type="checkbox" name="options" autocomplete="off">States
@@ -25,10 +25,10 @@
                 <input type="checkbox" name="options" autocomplete="off"> Affecting Land Nodes
             </label> -->
             <label class="btn btn-secondary"  data-type="affecting_land_storms">
-                <input type="checkbox" name="options" autocomplete="off"> Affecting Land Storms
+                <input type="checkbox" name="options" autocomplete="off"> Land-affecting Hurricanes
             </label> 
 
-            <label for="decadeSelect">All hurricanes: </label>
+            <label for="decadeSelect">Choose time: </label>
             <select class="custom-select" id="decadeSelect" onchange="onDecadeChanged()">
               <option selected value="all-time">All Time</option>
               <option value="before-1979">Before 1979</option>
@@ -38,7 +38,7 @@
               <option value="after-2010">After 2010</option>
             </select>
 
-            <label for="decadeSelect2">Land-affecting hurricanes: </label>
+            <!-- <label for="decadeSelect2">Land-affecting hurricanes: </label>
             <select class="custom-select" id="decadeSelect2" onchange="onDecadeChanged2()">
               <option selected value="all-time-land-storm">All Time</option>
               <option value="before-1979-land-storm">Before 1979</option>
@@ -46,7 +46,7 @@
               <option value="1990-1999-land-storm">1990-1999</option>
               <option value="2000-2009-land-storm">2000-2009</option>
               <option value="after-2010-land-storm">After 2010</option>
-            </select>
+            </select> -->
         </div>
         <!-- <div>
             <label for="decadeSelect">Show: </label>
@@ -57,8 +57,8 @@
         </div> -->
         <div id="map" style="height: 720px; width: 960px; border: 1px solid #777;">
         </div>
-        <svg width="960" height="720" style="border: 1px solid #777;">
-        </svg>
+        <!-- <svg width="960" height="720" style="border: 1px solid #777;">
+        </svg> -->
     </div>
 </body>
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
