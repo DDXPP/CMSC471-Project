@@ -359,7 +359,7 @@ function readyToDraw(nodes, states) {
     nodeLinkG.selectAll('.node-2010-land-storm')
     .data(storms_after_2010)
     .enter().append('circle')
-    .attr('class', 'node-2010')
+    .attr('class', 'node-2010-land-storm')
     .style('fill', function(d){
     return colorScale(d['category']);
     })
